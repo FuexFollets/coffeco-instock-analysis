@@ -3,12 +3,12 @@ name = "coffeco-amazonseller-api"
 version = "0.1.0"
 description = ""
 authors = ["FuexFollets <fuex9follets@gmail.com>"]
-license = "MIT"
 readme = "README.md"
 packages = [{include = "coffeco_amazonseller_api"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"
+python-amazon-sp-api = "^0.18.4"
 
 
 [build-system]
