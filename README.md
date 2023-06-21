@@ -1,1 +1,1 @@
-# coffeco-amazonseller-api
+# coffeco-instock-analysis
