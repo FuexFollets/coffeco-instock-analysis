@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "coffeco-amazonseller-api"
+name = "coffeco-instock-analysis"
 version = "0.1.0"
 description = ""
 authors = ["FuexFollets <fuex9follets@gmail.com>"]
