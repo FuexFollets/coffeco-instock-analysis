@@ -8,3 +8,5 @@ class Product:
     id: bytes
     name: str
     price: float
+
+    # Add other fields as needed
