@@ -57,6 +57,12 @@ class Database:
             self.connection.commit()
 
         return self
+
+    def query_all_values(self, table: str) -> list[tuple]:
+        self.cursor.execute(f"SELECT rowid, * FROM {table};")
+
+        return self.cursor.fetchall()
+
     def query_table_columns(self, table: str) -> list[str]:
         self.cursor.execute(f"PRAGMA table_info({table});")
 
