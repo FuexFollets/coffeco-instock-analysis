@@ -126,6 +126,9 @@ celerybeat.pid
 .venv
 env/
 venv/
+
+# Database files
+*.db
 ENV/
 env.bak/
 venv.bak/
