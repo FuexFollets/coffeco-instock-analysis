@@ -68,7 +68,7 @@ class Database:
 
         return [column[1] for column in self.cursor.fetchall()]
 
-    def query_table_values(self, table: str, rowid: int = None) -> list[tuple]:
+    def query_row_value(self, table: str, rowid: int = None) -> list[tuple] | tuple:
         if (rowid is None):
             self.cursor.execute(f"SELECT * FROM {table};")
 
@@ -76,6 +76,14 @@ class Database:
 
         self.cursor.execute(f"SELECT * FROM {table} WHERE rowid={rowid};")
         return self.cursor.fetchone()
+
+    def query_column_value(self, table: str, column: str, rowid: int = None) -> list[tuple]:
+        if rowid is not None:
+            self.cursor.execute(f"SELECT {column} FROM {table} WHERE rowid={rowid};")
+        else:
+            self.cursor.execute(f"SELECT {column} FROM {table};")
+
+        return self.cursor.fetchall()
 
     def delete_table(self, table: str):
         self.cursor.execute(f"DROP TABLE {table};")
