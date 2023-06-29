@@ -1,20 +1,28 @@
 from __future__ import annotations
 
 from typing import NoneType
+from pathlib import Path
 import sqlite3
 
-from data_management import constants
 
+class Database:
+    def __init__(self, path: str | Path):
+        self.path: Path = Path(path)
+        self.connection: sqlite3.Connection = sqlite3.connect(self.path)
+        self.cursor: sqlite3.Cursor = self.connection.cursor()
 
-def table_names(db_connection: sqlite3.Connection) -> list[str]:
-    cursor: sqlite3.Cursor = db_connection.cursor()
-    cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+    def table_names(self) -> list[str]:
+        self.cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
 
-    return [table[0] for table in cursor.fetchall()]
+        return [table[0] for table in self.cursor.fetchall()]
 
+    def create_table(self, name: str, columns: list[str]) -> NoneType:
+        self.cursor.execute(f"CREATE TABLE {name} ({', '.join(columns)});")
 
-def initialize_users(db_connection: sqlite3.Conection) -> NoneType:
-    if constants.USER_DB_TABLE_NAME not in table_names(db_connection):
-        db_connection: sqlite3.Connection = sqlite3.connect(constants.USER_DB_PATH)
-        cursor: sqlite3.Cursor = db_connection.cursor()
-        cursor.execute(f"CREATE TABLE {constants.USER_DB_TABLE_NAME}")
+    def insert(self, table: str, values: list[str]) -> NoneType:
+        self.cursor.execute(f"INSERT INTO {table} VALUES ({', '.join(values)});")
+
+    def query_table(self, table: str) -> list[tuple]:
+        self.cursor.execute(f"SELECT * FROM {table};")
+
+        return self.cursor.fetchall()
