@@ -36,11 +36,8 @@ class Database:
                             """)
         return self
 
-    def insert_into_table(self, table: str, values: list[str]):
-        values_string: str = ', '.join(self.query_table_columns(table))
-        insert_string: str = ', '.join('?' * len(values))
-
-        self.cursor.execute(f"INSERT INTO {table}({values_string}) VALUES({insert_string});", values)
+    def create_table_column(self, table: str, column: str, data_type: SQLDataType):
+        self.cursor.execute(f"ALTER TABLE {table} ADD COLUMN {column} {data_type};")
         self.connection.commit()
 
         return self
