@@ -108,3 +108,10 @@ class Database:
         self.connection.commit()
 
         return self
+
+    def delete_empty_table_columns(self, table: str):
+        table_columns: list[str] = self.query_table_columns(table)
+
+        for column in table_columns:
+            if all(value is None for value in self.query_column_value(table, column)):
+                self.delete_table_column(table, column)
