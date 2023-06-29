@@ -30,7 +30,7 @@ class Database:
         table_fields: str = ', '.join([f"{column[0]} {column[1]}" for column in columns])
 
         self.cursor.execute(f"""
-                            CREATE TABLE IF NOT EXiSTS {name} (
+                            CREATE TABLE IF NOT EXISTS {name} (
                                 {table_fields}
                             );
                             """)
