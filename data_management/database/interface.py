@@ -54,3 +54,21 @@ class Database:
         self.cursor.execute(f"SELECT * FROM {table};")
 
         return self.cursor.fetchall()
+
+    def delete_table(self, table: str):
+        self.cursor.execute(f"DROP TABLE {table};")
+        self.connection.commit()
+
+        return self
+
+    def delete_table_column(self, table: str, column: str):
+        self.cursor.execute(f"ALTER TABLE {table} DROP COLUMN {column};")
+        self.connection.commit()
+
+        return self
+
+    def delete_table_row(self, table: str, rowid: str):
+        self.cursor.execute(f"DELETE FROM {table} WHERE rowid={rowid};")
+        self.connection.commit()
+
+        return self
