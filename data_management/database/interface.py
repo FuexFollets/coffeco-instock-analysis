@@ -76,3 +76,9 @@ class Database:
         self.connection.commit()
 
         return self
+
+    def update_table_value(self, table: str, rowid: int, column: str, value: str):
+        self.cursor.execute(f"UPDATE {table} SET {column}={value} WHERE rowid={rowid};")
+        self.connection.commit()
+
+        return self
