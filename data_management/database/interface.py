@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Literal
+from typing import Literal, Any
 
 import sqlite3
 
@@ -45,6 +45,21 @@ class Database:
 
         return self
 
+    def insert_into_table(self, table: str, values: list[Any] | dict[str, Any]):
+        fields: list[str] = self.query_table_columns(table)
+        insert_string: str = ', '.join('?' * len(fields))
+
+        if isinstance(values, dict):
+            inserted_values: list[Any] = [values[field] if field in values else None for field in fields]
+
+            self.cursor.execute(f"INSERT INTO {table}({fields}) VALUES({insert_string});", inserted_values)
+            self.connection.commit()
+
+        elif isinstance(values, list):
+            self.cursor.execute(f"INSERT INTO {table}({fields}) VALUES({insert_string});", values)
+            self.connection.commit()
+
+        return self
     def query_table_columns(self, table: str) -> list[str]:
         self.cursor.execute(f"PRAGMA table_info({table});")
 
