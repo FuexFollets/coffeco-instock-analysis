@@ -1,7 +1,18 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Literal
+
 import sqlite3
+
+
+NULL: str = "NULL"
+INTEGER: str = "INTEGER"
+REAL: str = "REAL"
+TEXT: str = "TEXT"
+BLOB: str = "BLOB"
+
+SQLDataType = Literal[NULL, INTEGER, REAL, TEXT, BLOB]
 
 
 class Database:
@@ -15,13 +26,15 @@ class Database:
 
         return [table[0] for table in self.cursor.fetchall()]
 
-    def create_table(self, name: str, columns: list[str]):
-        try:
-            self.cursor.execute(f"CREATE TABLE {name} ({', '.join(columns)});")
-            return self
+    def create_table(self, name: str, columns: list[tuple[str, SQLDataType]]):
+        table_fields: str = ', '.join([f"{column[0]} {column[1]}" for column in columns])
 
-        except sqlite3.OperationalError:
-            return self
+        self.cursor.execute(f"""
+                            CREATE TABLE IF NOT EXiSTS {name} (
+                                {table_fields}
+                            );
+                            """)
+        return self
 
     def insert_into_table(self, table: str, values: list[str]):
         values_string: str = ', '.join(self.query_table_columns(table))
