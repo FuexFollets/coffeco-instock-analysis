@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from typing import NoneType
 from pathlib import Path
 import sqlite3
 
@@ -16,10 +15,10 @@ class Database:
 
         return [table[0] for table in self.cursor.fetchall()]
 
-    def create_table(self, name: str, columns: list[str]) -> NoneType:
+    def create_table(self, name: str, columns: list[str]):
         self.cursor.execute(f"CREATE TABLE {name} ({', '.join(columns)});")
 
-    def insert(self, table: str, values: list[str]) -> NoneType:
+    def insert(self, table: str, values: list[str]):
         self.cursor.execute(f"INSERT INTO {table} VALUES ({', '.join(values)});")
 
     def query_table(self, table: str) -> list[tuple]:
