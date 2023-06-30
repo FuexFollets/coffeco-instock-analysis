@@ -36,8 +36,46 @@ class SQLColumn:
         self.primary_key: bool = primary_key
 
 
+class SQLTable:
+    def __init__(self,
+                 name: str,
+                 /,
+                 *,
+                 connection: sqlite3.Connection = None,
+                 cursor: sqlite3.Cursor = None,
+                 columns: list[SQLColumn] = None):
+        self.name: str = name
+        self.connection: sqlite3.Connection = connection
+        self.cursor: sqlite3.Cursor = cursor
 
-class Database:
+        if connection is not None and cursor is not None:
+            self.cursor.execute(f"PRAGMA table_xinfo({self.name});")
+            columns: list[tuple[int, str, SQLDataType, int, Any, bool]] = self.cursor.fetchall()
+
+            self.columns: list[SQLColumn] = [SQLColumn(column[1], cid=column[0], data_type=column[2],
+                                                       not_null=column[3], default_value=column[4],
+                                                       primary_key=column[5]) for column in columns]
+        else:
+            self.columns: list[SQLColumn] = columns
+
+    def query_table_values(self) -> list[tuple]:
+        self.cursor.execute(f"SELECT rowid, * FROM {self.name};")
+
+        return self.cursor.fetchall()
+
+    def query_column_values(self, column: str, rowid: int = None) -> list[tuple]:
+        if rowid is not None:
+            self.cursor.execute(f"SELECT {column} FROM {self.name} WHERE rowid={rowid};")
+        else:
+            self.cursor.execute(f"SELECT {column} FROM {self.name};")
+
+        return self.cursor.fetchall()
+
+    def query_row(self, rowid: int) -> tuple:
+        self.cursor.execute(f"SELECT * FROM {self.name} WHERE rowid={rowid};")
+
+        return self.cursor.fetchone()
+
     def __init__(self, path: str | Path):
         self.path: Path = Path(path)
         self.connection: sqlite3.Connection = sqlite3.connect(self.path)
