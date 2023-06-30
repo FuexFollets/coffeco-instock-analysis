@@ -111,6 +111,14 @@ class SQLTable:
 
         return self
 
+    def update_value(self, column: str, rowid: int, value: Any):
+        self.cursor.execute(f"UPDATE {self.name} SET {column}={value} WHERE rowid={rowid};")
+        self.connection.commit()
+
+        return self
+
+
+class SQLDatabase:
     def __init__(self, path: str | Path):
         self.path: Path = Path(path)
         self.connection: sqlite3.Connection = sqlite3.connect(self.path)
