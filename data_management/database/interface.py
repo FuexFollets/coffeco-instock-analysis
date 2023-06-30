@@ -91,6 +91,26 @@ class SQLTable:
             self.connection.commit()
 
         return self
+
+    def delete_row(self, rowid: int):
+        self.cursor.execute(f"DELETE FROM {self.name} WHERE rowid={rowid};")
+        self.connection.commit()
+
+        return self
+
+    def delete_column(self, column: str):
+        self.cursor.execute(f"ALTER TABLE {self.name} DROP COLUMN {column};")
+        self.connection.commit()
+
+        return self
+
+    def delete_unused_columns(self):
+        for column in self.columns:
+            if all(value[0] is None for value in self.query_column_values(column.name)):
+                self.delete_column(column.name)
+
+        return self
+
     def __init__(self, path: str | Path):
         self.path: Path = Path(path)
         self.connection: sqlite3.Connection = sqlite3.connect(self.path)
