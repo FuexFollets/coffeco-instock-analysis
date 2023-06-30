@@ -2,17 +2,39 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Literal, Any
+from dataclasses import dataclass
 
 import sqlite3
 
 
+ANY: str = ""
 NULL: str = "NULL"
 INTEGER: str = "INTEGER"
 REAL: str = "REAL"
 TEXT: str = "TEXT"
 BLOB: str = "BLOB"
 
-SQLDataType = Literal[NULL, INTEGER, REAL, TEXT, BLOB]
+SQLDataType = Literal[NULL, INTEGER, REAL, TEXT, BLOB, ANY]
+
+
+@dataclass
+class SQLColumn:
+    def __init__(self,
+                 name: str,
+                 /,
+                 *,
+                 cid: int = -1,
+                 data_type: SQLDataType = ANY,
+                 not_null: bool = False,
+                 default_value: Any = None,
+                 primary_key: bool = False):
+        self.name: str = name
+        self.cid: int = cid
+        self.data_type: SQLDataType = data_type
+        self.not_null: bool = not_null
+        self.default_value: Any = default_value
+        self.primary_key: bool = primary_key
+
 
 
 class Database:
