@@ -162,3 +162,8 @@ class SQLDatabase:
 
         return self
 
+    def __str__(self):
+        return f"SQLDatabase(path={self.path}, tables={self.query_table_names()})"
+
+    def __repr__(self):
+        return str(self)
