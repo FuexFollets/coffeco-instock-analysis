@@ -117,6 +117,9 @@ class SQLTable:
 
         return self
 
+    def __str__(self):
+        return f"SQLTable(name={self.name}, columns={self.columns})"
+
 
 class SQLDatabase:
     def __init__(self, path: str | Path):
