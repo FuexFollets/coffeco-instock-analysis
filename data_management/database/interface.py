@@ -19,15 +19,17 @@ SQLDataType = Literal[NULL, INTEGER, REAL, TEXT, BLOB, ANY]
 
 @dataclass
 class SQLColumn:
-    def __init__(self,
-                 name: str,
-                 /,
-                 *,
-                 cid: int = -1,
-                 data_type: SQLDataType = ANY,
-                 not_null: bool = False,
-                 default_value: Any = None,
-                 primary_key: bool = False):
+    def __init__(
+        self,
+        name: str,
+        /,
+        *,
+        cid: int = -1,
+        data_type: SQLDataType = ANY,
+        not_null: bool = False,
+        default_value: Any = None,
+        primary_key: bool = False,
+    ):
         self.name: str = name
         self.cid: int = cid
         self.data_type: SQLDataType = data_type
@@ -36,32 +38,46 @@ class SQLColumn:
         self.primary_key: bool = primary_key
 
     def __str__(self):
-        return f"SQLColumn(name={self.name}, cid={self.cid}, data_type={self.data_type}, " \
-               f"not_null={self.not_null}, default_value={self.default_value}, primary_key={self.primary_key})"
+        return (
+            f"SQLColumn(name={self.name}, cid={self.cid}, data_type={self.data_type}, "
+            f"not_null={self.not_null}, default_value={self.default_value}, primary_key={self.primary_key})"
+        )
 
     def __repr__(self):
         return str(self)
 
 
 class SQLTable:
-    def __init__(self,
-                 name: str,
-                 /,
-                 *,
-                 connection: sqlite3.Connection = None,
-                 cursor: sqlite3.Cursor = None,
-                 columns: list[SQLColumn] = None):
+    def __init__(
+        self,
+        name: str,
+        /,
+        *,
+        connection: sqlite3.Connection = None,
+        cursor: sqlite3.Cursor = None,
+        columns: list[SQLColumn] = None,
+    ):
         self.name: str = name
         self.connection: sqlite3.Connection = connection
         self.cursor: sqlite3.Cursor = cursor
 
         if connection is not None and cursor is not None:
             self.cursor.execute(f"PRAGMA table_xinfo({self.name});")
-            columns: list[tuple[int, str, SQLDataType, int, Any, bool]] = self.cursor.fetchall()
+            columns: list[
+                tuple[int, str, SQLDataType, int, Any, bool]
+            ] = self.cursor.fetchall()
 
-            self.columns: list[SQLColumn] = [SQLColumn(column[1], cid=column[0], data_type=column[2],
-                                                       not_null=column[3], default_value=column[4],
-                                                       primary_key=column[5]) for column in columns]
+            self.columns: list[SQLColumn] = [
+                SQLColumn(
+                    column[1],
+                    cid=column[0],
+                    data_type=column[2],
+                    not_null=column[3],
+                    default_value=column[4],
+                    primary_key=column[5],
+                )
+                for column in columns
+            ]
         else:
             self.columns: list[SQLColumn] = columns
 
@@ -72,7 +88,9 @@ class SQLTable:
 
     def query_column_values(self, column: str, rowid: int = None) -> list[tuple]:
         if rowid is not None:
-            self.cursor.execute(f"SELECT {column} FROM {self.name} WHERE rowid={rowid};")
+            self.cursor.execute(
+                f"SELECT {column} FROM {self.name} WHERE rowid={rowid};"
+            )
         else:
             self.cursor.execute(f"SELECT {column} FROM {self.name};")
 
@@ -85,21 +103,31 @@ class SQLTable:
 
     def insert_row(self, values: list[Any] | dict[str, Any]):
         fields: list[str] = [column.name for column in self.columns]
-        fields_string: str = ', '.join(fields)
-        insert_string: str = ', '.join('?' * len(fields))
+        fields_string: str = ", ".join(fields)
+        insert_string: str = ", ".join("?" * len(fields))
 
         if isinstance(values, dict):
-            inserted_values: list[Any] = [values[field] if field in values else None for field in fields]
+            inserted_values: list[Any] = [
+                values[field] if field in values else None for field in fields
+            ]
 
-            self.cursor.execute(f"INSERT INTO {self.name}({fields_string}) VALUES({insert_string});", inserted_values)
+            self.cursor.execute(
+                f"INSERT INTO {self.name}({fields_string}) VALUES({insert_string});",
+                inserted_values,
+            )
             self.connection.commit()
 
         elif isinstance(values, list):
-            self.cursor.execute(f"INSERT INTO {self.name}({fields_string}) VALUES({insert_string});", values)
+            self.cursor.execute(
+                f"INSERT INTO {self.name}({fields_string}) VALUES({insert_string});",
+                values,
+            )
             self.connection.commit()
 
         else:
-            raise TypeError(f"paramater 'values' must be a list or dict, not {type(values)}")
+            raise TypeError(
+                f"paramater 'values' must be a list or dict, not {type(values)}"
+            )
 
         return self
 
@@ -123,7 +151,9 @@ class SQLTable:
         return self
 
     def update_value(self, column: str, rowid: int, value: Any):
-        self.cursor.execute(f"UPDATE {self.name} SET {column}={value} WHERE rowid={rowid};")
+        self.cursor.execute(
+            f"UPDATE {self.name} SET {column}={value} WHERE rowid={rowid};"
+        )
         self.connection.commit()
 
         return self
@@ -153,7 +183,9 @@ class SQLDatabase:
         return [self.query_table(name) for name in self.query_table_names()]
 
     def create_table(self, sqltable: SQLTable):
-        table_columns = ', '.join(column.name + column.data_type for column in sqltable.columns)
+        table_columns = ", ".join(
+            column.name + column.data_type for column in sqltable.columns
+        )
 
         self.cursor.execute(f"CREATE TABLE {sqltable.name} ({table_columns});")
         self.connection.commit()
