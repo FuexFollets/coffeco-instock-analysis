@@ -155,3 +155,10 @@ class SQLDatabase:
         self.connection.commit()
 
         return self
+
+    def delete_table(self, name: str):
+        self.cursor.execute(f"DROP TABLE {name};")
+        self.connection.commit()
+
+        return self
+
