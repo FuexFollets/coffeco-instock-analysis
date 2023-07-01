@@ -7,14 +7,13 @@ from dataclasses import dataclass
 import sqlite3
 
 
-ANY: str = ""
-NULL: str = "NULL"
-INTEGER: str = "INTEGER"
-REAL: str = "REAL"
-TEXT: str = "TEXT"
-BLOB: str = "BLOB"
-
-SQLDataType = Literal[NULL, INTEGER, REAL, TEXT, BLOB, ANY]
+class SQLDataType(Enum):
+    ANY = ""
+    NULL = "NULL"
+    INTEGER = "INTEGER"
+    REAL = "REAL"
+    TEXT = "TEXT"
+    BLOB = "BLOB"
 
 
 @dataclass
