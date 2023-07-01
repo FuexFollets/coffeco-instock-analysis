@@ -126,3 +126,15 @@ class SQLDatabase:
         self.path: Path = Path(path)
         self.connection: sqlite3.Connection = sqlite3.connect(self.path)
         self.cursor: sqlite3.Cursor = self.connection.cursor()
+
+    def query_table_names(self) -> list[str]:
+        self.cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+
+        return [table[0] for table in self.cursor.fetchall()]
+
+    def query_table(self, name: str) -> SQLTable:
+        return SQLTable(name, connection=self.connection, cursor=self.cursor)
+
+    def query_all_tables(self) -> list[SQLTable]:
+        return [self.query_table(name) for name in self.query_table_names()]
+
