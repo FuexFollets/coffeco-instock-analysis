@@ -138,3 +138,10 @@ class SQLDatabase:
     def query_all_tables(self) -> list[SQLTable]:
         return [self.query_table(name) for name in self.query_table_names()]
 
+    def create_table(self, sqltable: SQLTable):
+        table_columns = ', '.join(column.name + column.data_type for column in sqltable.columns)
+
+        self.cursor.execute(f"CREATE TABLE {sqltable.name} ({table_columns});")
+        self.connection.commit()
+
+        return self
