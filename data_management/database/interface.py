@@ -35,6 +35,13 @@ class SQLColumn:
         self.default_value: Any = default_value
         self.primary_key: bool = primary_key
 
+    def __str__(self):
+        return f"SQLColumn(name={self.name}, cid={self.cid}, data_type={self.data_type}, " \
+               f"not_null={self.not_null}, default_value={self.default_value}, primary_key={self.primary_key})"
+
+    def __repr__(self):
+        return str(self)
+
 
 class SQLTable:
     def __init__(self,
