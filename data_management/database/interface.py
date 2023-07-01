@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Literal, Any
+from typing import Any, Optional
 from dataclasses import dataclass
+from enum import Enum
 
 import sqlite3
 
@@ -24,7 +25,7 @@ class SQLColumn:
         /,
         *,
         cid: int = -1,
-        data_type: SQLDataType = ANY,
+        data_type: SQLDataType = SQLDataType.ANY,
         not_null: bool = False,
         default_value: Any = None,
         primary_key: bool = False,
@@ -38,7 +39,7 @@ class SQLColumn:
 
     def __str__(self):
         return (
-            f"SQLColumn(name={self.name}, cid={self.cid}, data_type={self.data_type}, "
+            f"SQLColumn(name={self.name}, cid={self.cid}, data_type={self.data_type.name}, "
             f"not_null={self.not_null}, default_value={self.default_value}, primary_key={self.primary_key})"
         )
 
@@ -52,40 +53,45 @@ class SQLTable:
         name: str,
         /,
         *,
-        connection: sqlite3.Connection = None,
-        cursor: sqlite3.Cursor = None,
-        columns: list[SQLColumn] = None,
+        connection: Optional[sqlite3.Connection] = None,
+        cursor: Optional[sqlite3.Cursor] = None,
+        columns: Optional[list[SQLColumn]] = None,
     ):
         self.name: str = name
-        self.connection: sqlite3.Connection = connection
-        self.cursor: sqlite3.Cursor = cursor
+        self.connection: Optional[sqlite3.Connection] = connection
+        self.cursor: Optional[sqlite3.Cursor] = cursor
 
-        if connection is not None and cursor is not None:
+        if self.connection is not None and self.cursor is not None:
             self.cursor.execute(f"PRAGMA table_xinfo({self.name});")
-            columns: list[
-                tuple[int, str, SQLDataType, int, Any, bool]
+            db_columns: list[
+                tuple[int, str, SQLDataType, bool, Any, bool]
             ] = self.cursor.fetchall()
 
             self.columns: list[SQLColumn] = [
                 SQLColumn(
-                    column[1],
-                    cid=column[0],
-                    data_type=column[2],
-                    not_null=column[3],
-                    default_value=column[4],
-                    primary_key=column[5],
+                    db_column[1],
+                    cid=db_column[0],
+                    data_type=db_column[2],
+                    not_null=db_column[3],
+                    default_value=db_column[4],
+                    primary_key=db_column[5],
                 )
-                for column in columns
+                for db_column in db_columns
             ]
-        else:
+        elif columns is not None:
             self.columns: list[SQLColumn] = columns
 
     def query_table_values(self) -> list[tuple]:
-        self.cursor.execute(f"SELECT rowid, * FROM {self.name};")
+        if self.cursor is not None:
+            self.cursor.execute(f"SELECT rowid, * FROM {self.name};")
+            return self.cursor.fetchall()
 
-        return self.cursor.fetchall()
+        raise ValueError("table has no assigned cursor")
 
-    def query_column_values(self, column: str, rowid: int = None) -> list[tuple]:
+    def query_column_values(self, column: str, rowid: Optional[int] = None) -> list[tuple]:
+        if self.cursor is None:
+            raise ValueError("table has no assigned cursor")
+
         if rowid is not None:
             self.cursor.execute(
                 f"SELECT {column} FROM {self.name} WHERE rowid={rowid};"
@@ -96,6 +102,9 @@ class SQLTable:
         return self.cursor.fetchall()
 
     def query_row(self, rowid: int) -> tuple:
+        if self.cursor is None:
+            raise ValueError("table has no assigned cursor")
+
         self.cursor.execute(f"SELECT * FROM {self.name} WHERE rowid={rowid};")
 
         return self.cursor.fetchone()
@@ -104,6 +113,9 @@ class SQLTable:
         fields: list[str] = [column.name for column in self.columns]
         fields_string: str = ", ".join(fields)
         insert_string: str = ", ".join("?" * len(fields))
+
+        if self.cursor is None or self.connection is None:
+            raise ValueError("table has no assigned cursor or connection")
 
         if isinstance(values, dict):
             inserted_values: list[Any] = [
@@ -131,12 +143,18 @@ class SQLTable:
         return self
 
     def delete_row(self, rowid: int):
+        if self.cursor is None or self.connection is None:
+            raise ValueError("table has no assigned cursor or connection")
+
         self.cursor.execute(f"DELETE FROM {self.name} WHERE rowid={rowid};")
         self.connection.commit()
 
         return self
 
     def delete_column(self, column: str):
+        if self.cursor is None or self.connection is None:
+            raise ValueError("table has no assigned cursor or connection")
+
         self.cursor.execute(f"ALTER TABLE {self.name} DROP COLUMN {column};")
         self.connection.commit()
 
@@ -150,6 +168,9 @@ class SQLTable:
         return self
 
     def update_value(self, column: str, rowid: int, value: Any):
+        if self.cursor is None or self.connection is None:
+            raise ValueError("table has no assigned cursor or connection")
+
         self.cursor.execute(
             f"UPDATE {self.name} SET {column}={value} WHERE rowid={rowid};"
         )
@@ -183,7 +204,7 @@ class SQLDatabase:
 
     def create_table(self, sqltable: SQLTable):
         table_columns = ", ".join(
-            column.name + column.data_type for column in sqltable.columns
+            column.name + column.data_type.name for column in sqltable.columns
         )
 
         self.cursor.execute(f"CREATE TABLE {sqltable.name} ({table_columns});")
