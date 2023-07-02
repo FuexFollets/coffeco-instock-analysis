@@ -88,16 +88,18 @@ class SQLTable:
 
         raise ValueError("table has no assigned cursor")
 
-    def query_column_values(self, column: str, rowid: Optional[int] = None) -> list[tuple]:
+    def query_column_values(self, column: list[str], rowid: Optional[int] = None) -> list[tuple]:
         if self.cursor is None:
             raise ValueError("table has no assigned cursor")
 
+        column_selection_string: str = ", ".join(column)
+
         if rowid is not None:
             self.cursor.execute(
-                f"SELECT {column} FROM {self.name} WHERE rowid={rowid};"
+                f"SELECT {column_selection_string} FROM {self.name} WHERE rowid={rowid};"
             )
         else:
-            self.cursor.execute(f"SELECT {column} FROM {self.name};")
+            self.cursor.execute(f"SELECT {column_selection_string} FROM {self.name};")
 
         return self.cursor.fetchall()
 
