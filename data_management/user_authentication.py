@@ -3,7 +3,7 @@ from __future__ import annotations
 from hashlib import sha256
 
 from data_management.constants import USER_DB_PATH, USER_DB_TABLE_NAME
-from data_management.database.interface import SQLColumn, SQLTable, SQLDatabase
+from data_management.database.wrapper import SQLColumn, SQLTable, SQLDatabase
 
 
 class UserAuth:
