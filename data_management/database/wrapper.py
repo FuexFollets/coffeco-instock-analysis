@@ -24,14 +24,14 @@ class SQLColumn:
         name: str,
         /,
         *,
-        cid: int = -1,
+        cid: Optional[int] = -1,
         data_type: SQLDataType = SQLDataType.ANY,
         not_null: bool = False,
         default_value: Any = None,
         primary_key: bool = False,
     ):
         self.name: str = name
-        self.cid: int = cid
+        self.cid: Optional[int] = cid
         self.data_type: SQLDataType = data_type
         self.not_null: bool = not_null
         self.default_value: Any = default_value
