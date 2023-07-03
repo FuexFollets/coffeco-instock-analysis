@@ -164,7 +164,7 @@ class SQLTable:
 
     def delete_unused_columns(self):
         for column in self.columns:
-            if all(value[0] is None for value in self.query_column_values(column.name)):
+            if all(value[0] is None for value in self.query_column_values([column.name])):
                 self.delete_column(column.name)
 
         return self
