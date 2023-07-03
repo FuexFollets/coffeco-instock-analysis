@@ -109,7 +109,17 @@ class SQLTable:
         elif columns is not None:
             self.columns: list[SQLColumn] = columns
 
-    def query_table_values(self) -> list[tuple]:
+    def matches_model(self, model: Type[Model]) -> bool:
+        model_datatype_fields = model.to_sql_table().columns
+
+        for this_column, model_column in zip(self.columns, model_datatype_fields):
+            if this_column.data_type != model_column.data_type:
+                return False
+
+        return True
+
+
+    def query_table_values(self, export_model: Optional[Model] = None) -> list[tuple]:
         if self.cursor is not None:
             self.cursor.execute(f"SELECT rowid, * FROM {self.name};")
             return self.cursor.fetchall()
