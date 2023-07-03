@@ -52,8 +52,8 @@ class SQLColumn:
         name: str,
         /,
         *,
-        cid: Optional[int] = -1,
-        data_type: SQLDataType = SQLDataType.ANY,
+        cid: Optional[int] = None,
+        data_type: SQLDataType = SQLDataType.BLOB,
         not_null: bool = False,
         default_value: Any = None,
         primary_key: bool = False,
@@ -67,7 +67,7 @@ class SQLColumn:
 
     def __str__(self):
         return (
-            f"SQLColumn(name={self.name}, cid={self.cid}, data_type={self.data_type.name}, "
+            f"SQLColumn(name={self.name}, cid={self.cid}, data_type={self.data_type.name}, " \
             f"not_null={self.not_null}, default_value={self.default_value}, primary_key={self.primary_key})"
         )
 
