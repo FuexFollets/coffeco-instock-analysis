@@ -1,21 +1,49 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Optional, Iterable, Type
 from dataclasses import dataclass
 from enum import Enum
 
 import sqlite3
 
+from data_management.database.models.model import Model
+
+
+@dataclass
+class StringTypePair:
+    sql_type: str
+    py_type: type
+
 
 class SQLDataType(Enum):
-    ANY = ""
-    NULL = "NULL"
-    INTEGER = "INTEGER"
-    REAL = "REAL"
-    TEXT = "TEXT"
-    BLOB = "BLOB"
+    NULL = StringTypePair("NULL", type(None))
+    INTEGER = StringTypePair("INTEGER", int)
+    REAL = StringTypePair("REAL", float)
+    TEXT = StringTypePair("TEXT", str)
+    BLOB = StringTypePair("BLOB", bytes)
 
+    DEFAULT = StringTypePair("", bytes)
+
+    @classmethod
+    def from_string(cls, string: str) -> SQLDataType:
+        for member in cls.members():
+            if member.value.sql_type == string:
+                return member
+
+        raise ValueError(f"no SQLDataType with name '{string}'")
+
+    @classmethod
+    def from_type(cls, py_type: type) -> SQLDataType:
+        for member in cls.members():
+            if member.value.py_type == py_type:
+                return member
+
+        raise ValueError(f"no SQLDataType with type '{py_type}'")
+
+    @staticmethod
+    def members() -> Iterable[SQLDataType]:
+        yield from SQLDataType.__members__.values()
 
 @dataclass
 class SQLColumn:
