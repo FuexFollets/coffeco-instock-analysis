@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, Field
+from dataclasses import InitVar, dataclass, Field
 from typing import ClassVar
 
 import data_management.database.wrapper as db_wrapper
@@ -11,6 +11,7 @@ MODEL_TABLE_NAME_FIELD = "table_name"
 @dataclass
 class Model:
     table_name: ClassVar[str]
+    rowid: int
 
     def __init_subclass__(cls, sql_table_name: str):
         cls.table_name: str = sql_table_name
@@ -21,7 +22,7 @@ class Model:
         columns: list[db_wrapper.SQLColumn] = []
 
         for field_name, field_type, in fields.items():
-            if field_name == MODEL_TABLE_NAME_FIELD:
+            if field_name == MODEL_TABLE_NAME_FIELD or field_name == "rowid":
                 continue
 
             # Forgive me for this
