@@ -126,12 +126,18 @@ class SQLTable:
         return True
 
 
-    def query_table_values(self, export_model: Optional[db_model.Model] = None) -> list[tuple]:
-        if self.cursor is not None:
-            self.cursor.execute(f"SELECT rowid, * FROM {self.name};")
-            return self.cursor.fetchall()
+    def query_table_values(self, export_model: Optional[Type[db_model.Model]] = None) -> list[tuple] | list[db_model.Model]:
+        if self.cursor is None:
+            raise ValueError("table has no assigned cursor")
 
-        raise ValueError("table has no assigned cursor")
+        self.cursor.execute(f"SELECT rowid, * FROM {self.name};")
+        fields = self.cursor.fetchall()
+
+        if export_model is None:
+            return fields
+
+        return [export_model(*row_content) for row_content in fields]
+
 
     def query_column_values(self, column: list[str], rowid: Optional[int] = None) -> list[tuple]:
         if self.cursor is None:
