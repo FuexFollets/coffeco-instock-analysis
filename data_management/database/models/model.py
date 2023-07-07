@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, Field
 
-from data_management.database.wrapper import SQLColumn, SQLTable, SQLDataType
+import data_management.database.wrapper as db_wrapper
 
 
 MODEL_TABLE_NAME_FIELD = "table_name"
@@ -15,18 +15,22 @@ class Model:
         cls.table_name: str = sql_table_name
 
     @classmethod
-    def to_sql_table(cls) -> SQLTable:
+    def to_sql_table(cls) -> db_wrapper.SQLTable:
         fields: dict[str, Field] = cls.__dataclass_fields__
-        columns: list[SQLColumn] = []
+        columns: list[db_wrapper.SQLColumn] = []
 
         for field_name, field_type, in fields.items():
             if field_name == MODEL_TABLE_NAME_FIELD:
                 continue
 
-            if not isinstance(field_type.type, SQLDataType):
+            # Forgive me for this
+            SQLDataType = db_wrapper.SQLDataType
+            field_sql_data_type: SQLDataType = SQLDataType.from_type(eval(field_type.type))
+
+            if not isinstance(field_sql_data_type, SQLDataType):
                 raise TypeError(f"Field '{field_name}' must be of type SQLDataType")
 
-            columns.append(SQLColumn(field_name, data_type=field_type.type))
+            columns.append(db_wrapper.SQLColumn(field_name, data_type=field_sql_data_type))
 
-        return SQLTable(cls.table_name, columns=columns)
+        return db_wrapper.SQLTable(cls.table_name, columns=columns)
 

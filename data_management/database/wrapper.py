@@ -7,7 +7,7 @@ from enum import Enum
 
 import sqlite3
 
-from data_management.database.models.model import Model
+import data_management.database.models.model as db_model
 
 
 @dataclass
@@ -15,6 +15,8 @@ class StringTypePair:
     sql_type: str
     py_type: type
 
+    def equal_types(self, other: StringTypePair) -> bool:
+        return self.py_type == other.py_type
 
 class SQLDataType(Enum):
     NULL = StringTypePair("NULL", type(None))
@@ -22,7 +24,6 @@ class SQLDataType(Enum):
     REAL = StringTypePair("REAL", float)
     TEXT = StringTypePair("TEXT", str)
     BLOB = StringTypePair("BLOB", bytes)
-
     DEFAULT = StringTypePair("", bytes)
 
     @classmethod
@@ -43,7 +44,7 @@ class SQLDataType(Enum):
 
     @staticmethod
     def members() -> Iterable[SQLDataType]:
-        yield from SQLDataType.__members__.values()
+        return [SQLDataType.NULL, SQLDataType.INTEGER, SQLDataType.REAL, SQLDataType.TEXT, SQLDataType.BLOB, SQLDataType.DEFAULT]
 
 @dataclass
 class SQLColumn:
@@ -53,7 +54,7 @@ class SQLColumn:
         /,
         *,
         cid: Optional[int] = None,
-        data_type: SQLDataType = SQLDataType.BLOB,
+        data_type: SQLDataType = SQLDataType.DEFAULT,
         not_null: bool = False,
         default_value: Any = None,
         primary_key: bool = False,
@@ -67,9 +68,12 @@ class SQLColumn:
 
     def __str__(self):
         return (
-            f"SQLColumn(name={self.name}, cid={self.cid}, data_type={self.data_type.name}, " \
+            f"SQLColumn(name={self.name}, cid={self.cid}, data_type={self.data_type}, " \
             f"not_null={self.not_null}, default_value={self.default_value}, primary_key={self.primary_key})"
         )
+
+    def simple_str(self):
+        return f"SQLColumn(name={self.name}, data_type={self.data_type})"
 
     def __repr__(self):
         return str(self)
@@ -92,14 +96,14 @@ class SQLTable:
         if self.connection is not None and self.cursor is not None:
             self.cursor.execute(f"PRAGMA table_xinfo({self.name});")
             db_columns: list[
-                tuple[int, str, SQLDataType, bool, Any, bool]
+                tuple[int, str, str, bool, Any, bool]
             ] = self.cursor.fetchall()
 
             self.columns: list[SQLColumn] = [
                 SQLColumn(
                     db_column[1],
                     cid=db_column[0],
-                    data_type=db_column[2],
+                    data_type=SQLDataType.from_string(db_column[2]),
                     not_null=db_column[3],
                     default_value=db_column[4],
                     primary_key=db_column[5],
@@ -109,17 +113,20 @@ class SQLTable:
         elif columns is not None:
             self.columns: list[SQLColumn] = columns
 
-    def matches_model(self, model: Type[Model]) -> bool:
-        model_datatype_fields = model.to_sql_table().columns
+    def matches_model(self, model: Type[db_model.Model]) -> bool:
+        model_datatype_fields: list[SQLColumn] = model.to_sql_table().columns
+
+        if len(self.columns) != len(model_datatype_fields):
+            return False
 
         for this_column, model_column in zip(self.columns, model_datatype_fields):
-            if this_column.data_type != model_column.data_type:
+            if this_column.data_type.value.py_type != model_column.data_type.value.py_type:
                 return False
 
         return True
 
 
-    def query_table_values(self, export_model: Optional[Model] = None) -> list[tuple]:
+    def query_table_values(self, export_model: Optional[db_model.Model] = None) -> list[tuple]:
         if self.cursor is not None:
             self.cursor.execute(f"SELECT rowid, * FROM {self.name};")
             return self.cursor.fetchall()
@@ -219,7 +226,9 @@ class SQLTable:
         return self
 
     def __str__(self):
-        return f"SQLTable(name={self.name}, columns={self.columns})"
+        column_strings: list[str] = [column.simple_str() for column in self.columns]
+
+        return f"SQLTable(name={self.name}, columns={column_strings})"
 
     def __repr__(self):
         return str(self)
