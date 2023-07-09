@@ -126,7 +126,7 @@ class SQLTable:
         return True
 
 
-    def query_table_values(self, export_model: Optional[Type[db_model.Model]] = None) -> list[tuple] | list[db_model.Model]:
+    def query_values(self, export_model: Optional[Type[db_model.Model]] = None) -> list[tuple] | list[db_model.Model]:
         if self.cursor is None:
             raise ValueError("table has no assigned cursor")
 
@@ -139,11 +139,11 @@ class SQLTable:
         return [export_model(*row_content) for row_content in fields]
 
 
-    def query_column_values(self, column: list[str], rowid: Optional[int] = None) -> list[tuple]:
+    def query_columns(self, columns: list[str] | str, rowid: Optional[int] = None) -> list[tuple]:
         if self.cursor is None:
             raise ValueError("table has no assigned cursor")
 
-        column_selection_string: str = ", ".join(column)
+        column_selection_string: str = ", ".join(columns) if isinstance(columns, list) else columns
 
         if rowid is not None:
             self.cursor.execute(
@@ -226,7 +226,7 @@ class SQLTable:
 
     def delete_unused_columns(self):
         for column in self.columns:
-            if all(value[0] is None for value in self.query_column_values([column.name])):
+            if all(value[0] is None for value in self.query_columns([column.name])):
                 self.delete_column(column.name)
 
         return self
