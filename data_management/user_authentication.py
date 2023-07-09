@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 from hashlib import sha256
+from enum import Enum
 
 from data_management.constants import USER_DB_PATH, USER_DB_TABLE_NAME
-from data_management.database.wrapper import SQLColumn, SQLTable, SQLDatabase
+from data_management.database.wrapper import SQLTable, SQLDatabase
+from data_management.database.models.user import UserModel
 
 
 class UserAuth:
@@ -16,5 +18,19 @@ class UserAuth:
     def gen_token(username: str, password: str) -> str:
         return sha256((username + password).encode()).hexdigest()
 
-    def verify_token(self, username: str, password: str) -> bool:
-        token = self.gen_token(username, password)
+    class VerificationStatus(Enum):
+        SUCCESS = 0
+        USER_NOT_FOUND = 1
+        INCORRECT_TOKEN = 2
+
+    def verify_token(self, email: str, token: bytes) -> VerificationStatus:
+        users: list[UserModel] = self.user_table.query_values(export_model=UserModel)
+
+        for user in users:
+            if user.email == email:
+                if user.token == token:
+                    return self.VerificationStatus.SUCCESS
+                else:
+                    return self.VerificationStatus.INCORRECT_TOKEN
+
+        return self.VerificationStatus.USER_NOT_FOUND
