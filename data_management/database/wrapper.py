@@ -18,6 +18,7 @@ class StringTypePair:
     def equal_types(self, other: StringTypePair) -> bool:
         return self.py_type == other.py_type
 
+
 class SQLDataType(Enum):
     NULL = StringTypePair("NULL", type(None))
     INTEGER = StringTypePair("INTEGER", int)
@@ -44,7 +45,15 @@ class SQLDataType(Enum):
 
     @staticmethod
     def members() -> Iterable[SQLDataType]:
-        return [SQLDataType.NULL, SQLDataType.INTEGER, SQLDataType.REAL, SQLDataType.TEXT, SQLDataType.BLOB, SQLDataType.DEFAULT]
+        return [
+            SQLDataType.NULL,
+            SQLDataType.INTEGER,
+            SQLDataType.REAL,
+            SQLDataType.TEXT,
+            SQLDataType.BLOB,
+            SQLDataType.DEFAULT,
+        ]
+
 
 @dataclass
 class SQLColumn:
@@ -68,7 +77,7 @@ class SQLColumn:
 
     def __str__(self):
         return (
-            f"SQLColumn(name={self.name}, cid={self.cid}, data_type={self.data_type}, " \
+            f"SQLColumn(name={self.name}, cid={self.cid}, data_type={self.data_type}, "
             f"not_null={self.not_null}, default_value={self.default_value}, primary_key={self.primary_key})"
         )
 
@@ -120,13 +129,17 @@ class SQLTable:
             return False
 
         for this_column, model_column in zip(self.columns, model_datatype_fields):
-            if this_column.data_type.value.py_type != model_column.data_type.value.py_type:
+            if (
+                this_column.data_type.value.py_type
+                != model_column.data_type.value.py_type
+            ):
                 return False
 
         return True
 
-
-    def query_values(self, export_model: Optional[Type[db_model.Model]] = None) -> list[tuple] | list[db_model.Model]:
+    def query_values(
+        self, export_model: Optional[Type[db_model.Model]] = None
+    ) -> list[tuple] | list[db_model.Model]:
         if self.cursor is None:
             raise ValueError("table has no assigned cursor")
 
@@ -138,12 +151,15 @@ class SQLTable:
 
         return [export_model(*row_content) for row_content in fields]
 
-
-    def query_columns(self, columns: list[str] | str, rowid: Optional[int] = None) -> list[tuple]:
+    def query_columns(
+        self, columns: list[str] | str, rowid: Optional[int] = None
+    ) -> list[tuple]:
         if self.cursor is None:
             raise ValueError("table has no assigned cursor")
 
-        column_selection_string: str = ", ".join(columns) if isinstance(columns, list) else columns
+        column_selection_string: str = (
+            ", ".join(columns) if isinstance(columns, list) else columns
+        )
 
         if rowid is not None:
             self.cursor.execute(
@@ -177,7 +193,7 @@ class SQLTable:
 
             self.cursor.execute(
                 f"INSERT INTO {self.name}({fields_string}) VALUES({insert_string});",
-                [*values.__dict__.values()][1:]
+                [*values.__dict__.values()][1:],
             )
             self.connection.commit()
 

@@ -8,7 +8,9 @@ from data_management.database.wrapper import SQLColumn, SQLTable, SQLDatabase
 
 class UserAuth:
     def __init__(self):
-        self.user_table: SQLTable = SQLDatabase(USER_DB_PATH).query_table(USER_DB_TABLE_NAME)
+        self.user_table: SQLTable = SQLDatabase(USER_DB_PATH).query_table(
+            USER_DB_TABLE_NAME
+        )
 
     @staticmethod
     def gen_token(username: str, password: str) -> str:
@@ -16,4 +18,3 @@ class UserAuth:
 
     def verify_token(self, username: str, password: str) -> bool:
         token = self.gen_token(username, password)
-
