@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from dataclasses import InitVar, dataclass, Field
-from typing import ClassVar
+from dataclasses import dataclass, Field
+from typing import ClassVar, Optional
 
 import data_management.database.wrapper as db_wrapper
 
@@ -11,7 +11,7 @@ MODEL_TABLE_NAME_FIELD = "table_name"
 @dataclass
 class Model:
     table_name: ClassVar[str]
-    rowid: int
+    rowid: Optional[int]
 
     def __init_subclass__(cls, sql_table_name: str):
         cls.table_name: str = sql_table_name
