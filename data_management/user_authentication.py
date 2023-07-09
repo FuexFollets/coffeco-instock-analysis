@@ -15,11 +15,19 @@ class UserAuth:
         )
 
     @staticmethod
+<<<<<<< HEAD
     def gen_id(email: str) -> bytes:
         return sha256(email.encode()).digest()
 
     @staticmethod
     def gen_token(email: str, password: str) -> bytes:
+=======
+    def copmute_id(email: str) -> bytes:
+        return sha256(email.encode()).digest()
+
+    @staticmethod
+    def compute_token(email: str, password: str) -> bytes:
+>>>>>>> a682fd2 (Implemented id generation by hashing email)
         return sha256((email + password).encode()).digest()
 
     class VerificationStatus(Enum):
