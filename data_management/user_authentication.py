@@ -15,8 +15,12 @@ class UserAuth:
         )
 
     @staticmethod
-    def gen_token(username: str, password: str) -> str:
-        return sha256((username + password).encode()).hexdigest()
+    def gen_id(email: str) -> bytes:
+        return sha256(email.encode()).digest()
+
+    @staticmethod
+    def gen_token(email: str, password: str) -> bytes:
+        return sha256((email + password).encode()).digest()
 
     class VerificationStatus(Enum):
         SUCCESS = 0
