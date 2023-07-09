@@ -162,7 +162,7 @@ class SQLTable:
 
         return self.cursor.fetchone()
 
-    def insert_row(self, values: list[Any] | dict[str, Any]):
+    def insert_row(self, values: list[Any] | dict[str, Any] | Type[db_model.Model]):
         fields: list[str] = [column.name for column in self.columns]
         fields_string: str = ", ".join(fields)
         insert_string: str = ", ".join("?" * len(fields))
@@ -170,7 +170,18 @@ class SQLTable:
         if self.cursor is None or self.connection is None:
             raise ValueError("table has no assigned cursor or connection")
 
-        if isinstance(values, dict):
+        if isinstance(values, db_model.Model):
+            print(f"{insert_string = }")
+            print(f"{[*values.__dict__.values()] = }")
+            print(f"{fields_string = }")
+
+            self.cursor.execute(
+                f"INSERT INTO {self.name}({fields_string}) VALUES({insert_string});",
+                [*values.__dict__.values()][1:]
+            )
+            self.connection.commit()
+
+        elif isinstance(values, dict):
             inserted_values: list[Any] = [
                 values[field] if field in values else None for field in fields
             ]
