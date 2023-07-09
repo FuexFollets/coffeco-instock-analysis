@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Optional, Iterable, Type
+from typing import Any, Optional, Iterable, Type, TypeVar, overload
 from dataclasses import dataclass
 from enum import Enum
 
@@ -9,6 +9,8 @@ import sqlite3
 
 import data_management.database.models.model as db_model
 
+
+T = TypeVar("T", bound=db_model.Model)
 
 @dataclass
 class StringTypePair:
@@ -137,9 +139,17 @@ class SQLTable:
 
         return True
 
+    @overload
+    def query_values(self) -> list[tuple]:
+        ...
+
+    @overload
+    def query_values(self, export_model: Type[T]) -> list[T]:
+        ...
+
     def query_values(
-        self, export_model: Optional[Type[db_model.Model]] = None
-    ) -> list[tuple] | list[db_model.Model]:
+        self, export_model: Optional[Type[T]] = None
+    ) -> list[tuple] | list[T]:
         if self.cursor is None:
             raise ValueError("table has no assigned cursor")
 
