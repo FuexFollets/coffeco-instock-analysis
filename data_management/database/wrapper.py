@@ -11,6 +11,7 @@ import data_management.database.models.model as db_model
 
 
 T = TypeVar("T", bound=db_model.Model)
+SQLType = int | float | str | bytes | None
 
 @dataclass
 class StringTypePair:
@@ -140,7 +141,7 @@ class SQLTable:
         return True
 
     @overload
-    def query_values(self) -> list[tuple]:
+    def query_values(self) -> list[tuple[Any, ...]]:
         ...
 
     @overload
@@ -149,12 +150,12 @@ class SQLTable:
 
     def query_values(
         self, export_model: Optional[Type[T]] = None
-    ) -> list[tuple] | list[T]:
+    ) -> list[tuple[Any, ...]] | list[T]:
         if self.cursor is None:
             raise ValueError("table has no assigned cursor")
 
         self.cursor.execute(f"SELECT rowid, * FROM {self.name};")
-        fields = self.cursor.fetchall()
+        fields: list[tuple[Any, ...]] = self.cursor.fetchall()
 
         if export_model is None:
             return fields
@@ -163,7 +164,7 @@ class SQLTable:
 
     def query_columns(
         self, columns: list[str] | str, rowid: Optional[int] = None
-    ) -> list[tuple]:
+    ) -> list[tuple[object, ...]]:
         if self.cursor is None:
             raise ValueError("table has no assigned cursor")
 
