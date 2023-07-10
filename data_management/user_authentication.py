@@ -15,7 +15,7 @@ class UserAuth:
         )
 
     @staticmethod
-    def copmute_id(email: str) -> bytes:
+    def compute_token(email: str) -> bytes:
         return sha256(email.encode()).digest()
 
     @staticmethod
@@ -38,3 +38,5 @@ class UserAuth:
                     return self.VerificationStatus.INCORRECT_TOKEN
 
         return self.VerificationStatus.USER_NOT_FOUND
+
+
