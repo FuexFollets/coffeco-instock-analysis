@@ -15,7 +15,7 @@ class UserAuth:
         )
 
     @staticmethod
-    def compute_token(email: str) -> bytes:
+    def compute_id(email: str) -> bytes:
         return sha256(email.encode()).digest()
 
     @staticmethod
@@ -27,16 +27,14 @@ class UserAuth:
         USER_NOT_FOUND = 1
         INCORRECT_TOKEN = 2
 
-    def verify_token(self, email: str, token: bytes) -> VerificationStatus:
+    def verify_token(self, id: bytes, token: bytes) -> VerificationStatus:
         users: list[UserModel] = self.user_table.query_values(export_model=UserModel)
 
         for user in users:
-            if user.email == email:
+            if user.id == id:
                 if user.token == token:
                     return self.VerificationStatus.SUCCESS
                 else:
                     return self.VerificationStatus.INCORRECT_TOKEN
 
         return self.VerificationStatus.USER_NOT_FOUND
-
-
