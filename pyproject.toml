@@ -9,7 +9,6 @@ packages = [{include = "coffeco_amazonseller_api"}]
 [tool.poetry.dependencies]
 python = "^3.11"
 python-amazon-sp-api = "^0.18.4"
-python-dotenv = "^1.0.0"
 
 
 [build-system]
