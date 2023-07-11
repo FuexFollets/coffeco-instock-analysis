@@ -23,4 +23,6 @@ __all__: Sequence[str] = (
     "SQLDatabase",
     "Model",
     "UserModel",
+    "USER_DB_PATH",
+    "USER_DB_TABLE_NAME",
 )
