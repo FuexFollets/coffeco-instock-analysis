@@ -10,6 +10,7 @@ packages = [{include = "coffeco_amazonseller_api"}]
 python = "^3.11"
 python-amazon-sp-api = "^0.18.4"
 apgorm = "^1.0.0b14"
+python-dotenv = "^1.0.0"
 
 
 [build-system]
