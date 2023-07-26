@@ -13,6 +13,7 @@ import data_management.database.models.model as db_model
 T = TypeVar("T", bound=db_model.Model)
 SQLType = int | float | str | bytes | None
 
+
 @dataclass
 class StringTypePair:
     sql_type: str
@@ -230,6 +231,18 @@ class SQLTable:
             raise TypeError(
                 f"paramater 'values' must be a list or dict, not {type(values)}"
             )
+
+        return self
+
+    def add_column(self, column: SQLColumn):
+        if self.cursor is None or self.connection is None:
+            raise ValueError("table has no assigned cursor or connection")
+
+        self.cursor.execute(
+            f"ALTER TABLE {self.name} ADD COLUMN {column.name} {column.data_type.value.sql_type};"
+        )
+        self.connection.commit()
+        self.columns.append(column)
 
         return self
 
